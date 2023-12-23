@@ -1,22 +1,24 @@
-Asteroid = {}
+local Entity = require("entity")
+local Asteroid = setmetatable({}, {__index = Entity})
+
 Asteroid.__index = Asteroid
 
-function Asteroid.new(x, y)
+function Asteroid.new(world, windowWidth, windowHeight)
     local self = setmetatable({}, Asteroid)
-    self.x = x
-    self.y = y
-    self.Vx = 0.5
-    self.Vy = 0.3
+    self.body = love.physics.newBody(world, windowWidth, windowHeight / 2, "dynamic")
+    self.shape = love.physics.newCircleShape(20)
+    self.fixture = love.physics.newFixture(self.body, self.shape)
+    self.body:setLinearVelocity(70 * math.cos(love.math.random(10)), 70 * math.sin(love.math.random(10)))
+    self.fixture:setSensor(true)
+    self.fixture:setUserData({name = "Asteroid", data = self})
     return self
 end
 
-
 function Asteroid:draw()
 
-    love.graphics.push() -- Save the current transformation
-    -- love.graphics.polygon("line", -10, -10, 10, 0, -10, 10,-5, 0) -- Draw the triangle
-    love.graphics.ellipse("line",self.x, self.y ,25, 15, 7)
-    love.graphics.pop() -- Restore the transformation
+    love.graphics.push()
+    love.graphics.circle("line", self.body:getX(), self.body:getY(), 20, 5 )
+    love.graphics.pop()
 
 end
 

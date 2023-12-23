@@ -1,28 +1,28 @@
-Player = {}
+local Entity = require("entity")
+local Player = setmetatable({}, {__index = Entity})
+
 Player.__index = Player
 
-function Player.new(x, y)
+function Player.new(world, windowWidth, windowHeight)
     local self = setmetatable({}, Player)
-    self.x = x
-    self.y = y
-    self.Vx = 0
-    self.Vy = 0
-    self.dirX = 0
-    self.dirY = 0
-
+    self.angle = 0
+    self.body = love.physics.newBody(world, windowWidth / 2, windowHeight / 2, "dynamic")
+    self.shape = love.physics.newPolygonShape(-10, -10, 10, 0, -10, 10, -5, 0)
+    self.fixture = love.physics.newFixture(self.body, self.shape)
+    self.fixture:setSensor(true)
+    self.bullets = {}
+    self.fixture:setUserData({name = "Player", data = self})
     return self
 end
 
-
 function Player:draw()
-    local angle = math.atan2(self.dirY, self.dirX)
-
-    love.graphics.push() -- Save the current transformation
-    love.graphics.translate(self.x, self.y) -- Move the origin to the player's position
-    love.graphics.rotate(angle) -- Rotate the coordinate system
-    love.graphics.polygon("line", -10, -10, 10, 0, -10, 10,-5, 0) -- Draw the triangle
-    love.graphics.pop() -- Restore the transformation
-
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.push()
+    love.graphics.translate(self.body:getX(), self.body:getY())
+    love.graphics.rotate(self.angle)
+    love.graphics.polygon("line", -10, -10, 10, 0, -10, 10, -5, 0)
+    love.graphics.pop()
 end
+
 
 return Player
