@@ -1,7 +1,7 @@
 local Bullet = {}
 Bullet.__index = Bullet
 
-function Bullet.new(world, windowWidth, windowHeight, x, y, angle)
+function Bullet.new(x, y, angle)
     local self = setmetatable({}, Bullet)
 
     local bulletSpeed = 250

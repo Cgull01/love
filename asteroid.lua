@@ -7,10 +7,12 @@ Asteroid.__index = Asteroid
 
 
 -- gets random position thats on the edge of window
--- also preferably spawns asteroids further away from the player
-function getRandomPositionOnEdge(windowWidth, windowHeight,blockedBorder)
+-- also spawns asteroids further away from the player
+function getRandomPositionOnEdge()
 
     math.randomseed(os.time())
+
+    local blockedBorder = Utils.getClosestBorder(player.body:getX(), player.body:getY(), windowWidth, windowHeight)
 
     local posX, posY
     local edge = math.random(4)
@@ -37,27 +39,19 @@ function getRandomPositionOnEdge(windowWidth, windowHeight,blockedBorder)
 
 end
 
-function Asteroid.new(world, windowWidth, windowHeight, playerX, playerY)
+function Asteroid.new()
     local self = setmetatable({}, Asteroid)
 
-    local blockedBorder = Utils.getClosestBorder(playerX, playerY, windowWidth, windowHeight)
 
-    local posX, posY = getRandomPositionOnEdge(windowWidth,windowHeight,blockedBorder)
+    local posX, posY = getRandomPositionOnEdge()
 
     self.body = love.physics.newBody(world, posX, posY, "dynamic")
     self.shape = love.physics.newCircleShape(20)
-    self.fixture = love.physics.newFixture(self.body, self.shape)
 
-    local dirX, dirY = Utils.getDirectionToPoint(posX, posY, playerX, playerY)
-
-    -- local dirX = playerX - posX + math.random(-1, 1)
-    -- local dirY = playerY - posY + math.random(-1, 1)
-    -- local len = math.sqrt(dirX * dirX + dirY * dirY)
-
-    -- dirX = dirX / len
-    -- dirY = dirY / len
-
+    local dirX, dirY = Utils.getDirectionToPoint(posX, posY, player.body:getX(), player.body:getY())
     self.body:setLinearVelocity(70 * dirX, 70 * dirY)
+
+    self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setSensor(true)
     self.fixture:setUserData({name = "Asteroid", data = self})
     return self

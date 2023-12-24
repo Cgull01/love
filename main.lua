@@ -10,28 +10,28 @@ function love.load()
     world = love.physics.newWorld(0, 0, true)
     gameOver = false
 
-    player = Player.new(world, windowWidth, windowHeight)
+    player = Player.new()
 
-    asteroid = Asteroid.new(world, windowWidth, windowHeight, player.body:getX(), player.body:getY())
+    asteroid = Asteroid.new()
 
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 end
 
-local collisionHandlers = {
-    ["AsteroidPlayer"] = function(asteroidFixture, bulletFixture)
-        gameOver = true
-        print("Game Over")
-
-    end,
-    ["AsteroidBullet"] = function(asteroidFixture, bulletFixture)
-        bulletId = bulletFixture:getUserData().data.id
-        player.bullets[bulletId] = nil
-
-        -- TOOD: split asteroid
-    end
-}
-
 function beginContact(a, b)
+    local collisionHandlers = {
+        ["AsteroidPlayer"] = function(asteroidFixture, bulletFixture)
+            gameOver = true
+            print("Game Over")
+
+        end,
+        ["AsteroidBullet"] = function(asteroidFixture, bulletFixture)
+            bulletId = bulletFixture:getUserData().data.id
+            player.bullets[bulletId] = nil
+
+            -- TOOD: split asteroid
+        end
+    }
+
     -- Sort the names to avoid duplicating handlers for A vs B and B vs A
     local sortedNames = {a:getUserData().name, b:getUserData().name}
     table.sort(sortedNames)
@@ -47,16 +47,13 @@ end
 function love.mousepressed(x, y, button)
     -- if left mouse button pressed, spawn a bullet
     if button == 1 then
-        asteroid = {}
-        asteroid = Asteroid.new(world, windowWidth, windowHeight, player.body:getX(), player.body:getY())
+        local startX = player.body:getX() + dirX * 15
+        local startY = player.body:getY() + dirY * 15
+        local angle = math.atan2((y - startY), (x - startX))
 
-        -- local startX = player.body:getX() + dirX * 15
-        -- local startY = player.body:getY() + dirY * 15
-        -- local angle = math.atan2((y - startY), (x - startX))
+        local bullet = Bullet.new(startX, startY, angle)
 
-        -- local bullet = Bullet.new(world, windowWidth, windowHeight, startX, startY, angle)
-
-        -- player.bullets[bullet.id] = bullet
+        player.bullets[bullet.id] = bullet
     end
 end
 
@@ -81,8 +78,8 @@ function love.update(dt)
     end
 
 
-    player:updatePosition(windowWidth,windowHeight)
-    asteroid:updatePosition(windowWidth,windowHeight)
+    player:updatePosition()
+    asteroid:updatePosition()
 
 end
 
@@ -102,6 +99,5 @@ function love.draw()
     love.graphics.print("bullets: " .. tostring(#player.bullets), 10, 20)
     -- love.graphics.print("x: " .. tostring(player.body:getX()), 10, 30)
     -- love.graphics.print("y: " .. tostring(player.body:getY()), 10, 40)
-    love.graphics.print("x: " .. tostring(mouseX), 10, 30)
-    love.graphics.print("y: " .. tostring(mouseY), 10, 40)
+
 end
