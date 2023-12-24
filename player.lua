@@ -24,5 +24,4 @@ function Player:draw()
     love.graphics.pop()
 end
 
-
 return Player

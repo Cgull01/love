@@ -1,4 +1,5 @@
-local Bullet = {}
+local Entity = require("entity")
+local Bullet = setmetatable({}, {__index = Entity})
 Bullet.__index = Bullet
 
 function Bullet.new(x, y, angle)
@@ -13,17 +14,15 @@ function Bullet.new(x, y, angle)
     self.fixture:setSensor(true)
     self.body:setBullet(true)
     self.id = #player.bullets + 1
+    self.isDamaging = false
     return self
 end
 
 function Bullet:draw()
-
     love.graphics.push()
-    love.graphics.setColor(1,1,1)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", self.body:getX(), self.body:getY(), 1)
     love.graphics.pop()
-
-
 end
 
 return Bullet
