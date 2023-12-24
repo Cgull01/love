@@ -12,7 +12,7 @@ function love.load()
 
     player = Player.new(world, windowWidth, windowHeight)
 
-    asteroid = Asteroid.new(world, windowWidth, windowHeight)
+    asteroid = Asteroid.new(world, windowWidth, windowHeight, player.body:getX(), player.body:getY())
 
     world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 end
@@ -47,13 +47,16 @@ end
 function love.mousepressed(x, y, button)
     -- if left mouse button pressed, spawn a bullet
     if button == 1 then
-        local startX = player.body:getX() + dirX * 15
-        local startY = player.body:getY() + dirY * 15
-        local angle = math.atan2((y - startY), (x - startX))
+        asteroid = {}
+        asteroid = Asteroid.new(world, windowWidth, windowHeight, player.body:getX(), player.body:getY())
 
-        local bullet = Bullet.new(world, windowWidth, windowHeight, startX, startY, angle)
+        -- local startX = player.body:getX() + dirX * 15
+        -- local startY = player.body:getY() + dirY * 15
+        -- local angle = math.atan2((y - startY), (x - startX))
 
-        player.bullets[bullet.id] = bullet
+        -- local bullet = Bullet.new(world, windowWidth, windowHeight, startX, startY, angle)
+
+        -- player.bullets[bullet.id] = bullet
     end
 end
 
@@ -93,9 +96,12 @@ function love.draw()
     player:draw()
 
     asteroid:draw()
+    local mouseX, mouseY = love.mouse.getPosition()
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
     love.graphics.print("bullets: " .. tostring(#player.bullets), 10, 20)
-    love.graphics.print("x: " .. tostring(player.body:getX()), 10, 30)
-    love.graphics.print("y: " .. tostring(player.body:getY()), 10, 40)
+    -- love.graphics.print("x: " .. tostring(player.body:getX()), 10, 30)
+    -- love.graphics.print("y: " .. tostring(player.body:getY()), 10, 40)
+    love.graphics.print("x: " .. tostring(mouseX), 10, 30)
+    love.graphics.print("y: " .. tostring(mouseY), 10, 40)
 end

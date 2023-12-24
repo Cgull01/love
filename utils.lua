@@ -11,4 +11,25 @@ function utils.getDirectionToPoint(x1, y1, x2, y2)
     return dirX, dirY
 end
 
+function utils.getClosestBorder(playerX, playerY, windowWidth, windowHeight)
+    local distances = {
+        [1] = playerY,
+        [2] = windowWidth - playerX,
+        [3] = windowHeight - playerY,
+        [4] = playerX
+    }
+
+    local distanceToEdge = {
+        [playerY] = 1,
+        [windowWidth - playerX] = 2,
+        [windowHeight - playerY] = 3,
+        [playerX] = 4
+    }
+
+    local smallestDistance = math.min(distances[1], distances[2], distances[3], distances[4])
+
+    return distanceToEdge[smallestDistance]
+end
+
+
 return utils
