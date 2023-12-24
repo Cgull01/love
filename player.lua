@@ -5,12 +5,13 @@ Player.__index = Player
 
 function Player.new()
     local self = setmetatable({}, Player)
-    self.angle = 0
     self.body = love.physics.newBody(world, windowWidth / 2, windowHeight / 2, "dynamic")
     self.shape = love.physics.newPolygonShape(-10, -10, 10, 0, -10, 10, -5, 0)
     self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setUserData({name = "Player", data = self})
     self.fixture:setSensor(true)
+
+    self.angle = 0
     self.bullets = {}
     return self
 end

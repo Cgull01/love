@@ -11,7 +11,6 @@ Asteroid.__index = Asteroid
 function getRandomPositionOnEdge()
 
     local blockedBorder = Utils.getClosestBorder(player.body:getX(), player.body:getY())
-
     local posX, posY
     local edge = math.random(4)
 
@@ -34,7 +33,6 @@ function getRandomPositionOnEdge()
     end
 
     return posX, posY
-
 end
 
 function generateRandomAsteroidShape(radius, numPoints)
@@ -47,17 +45,12 @@ function generateRandomAsteroidShape(radius, numPoints)
 
     -- Generate the points
     for i = 1, numPoints do
-        -- Calculate the angle for this point
         local theta = (i - 1) * (2 * math.pi / numPoints)
-
-        -- Generate a random distance for this point
         local dist = math.random(minDist, maxDist)
 
-        -- Calculate the x and y coordinates for this point
         local x = dist * math.cos(theta)
         local y = dist * math.sin(theta)
 
-        -- Add the point to the table
         table.insert(points, x)
         table.insert(points, y)
     end
@@ -70,9 +63,9 @@ function Asteroid.new(health)
     local self = setmetatable({}, Asteroid)
     local posX, posY = getRandomPositionOnEdge()
 
-    self.body = love.physics.newBody(world, posX, posY, "dynamic")
-
     local dirX, dirY = Utils.getDirectionToPoint(posX, posY, player.body:getX(), player.body:getY())
+
+    self.body = love.physics.newBody(world, posX, posY, "dynamic")
     self.body:setLinearVelocity(70 * math.cos(dirX + love.math.random(-10, 10)), 70 * math.sin(dirY + love.math.random(-10, 10)))
     self.body:setAngularVelocity(math.random(-0.1, 0.1))
 

@@ -13,8 +13,10 @@ function Bullet.new(x, y, angle)
     self.fixture:setUserData({name = "Bullet", data = self})
     self.fixture:setSensor(true)
     self.body:setBullet(true)
+
     self.id = #player.bullets + 1
     self.isDamaging = false
+
     return self
 end
 
@@ -23,6 +25,16 @@ function Bullet:draw()
     love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", self.body:getX(), self.body:getY(), 1)
     love.graphics.pop()
+end
+
+function Bullet:updatePosition()
+    Entity.updatePosition(self)
+
+    if self.isDamaging == false then
+        if Utils.getDistance(player.body:getX(), player.body:getY(), self.body:getX(), self.body:getY()) > 100 then
+            self.isDamaging = true
+        end
+    end
 end
 
 return Bullet

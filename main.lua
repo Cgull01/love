@@ -8,6 +8,7 @@ windowWidth, windowHeight = love.graphics.getDimensions()
 -- TODO
 -- player lifepoints
 -- gameover
+-- powerups: health, machineGun while removing old bullets, split shooter
 -- massive world? tracking player?
 
 local ASTEROID_COUNT = 5
@@ -33,14 +34,13 @@ function love.load()
         }
     )
 
+    -- globals
     world = love.physics.newWorld(0, 0, true)
-    gameOver = false
-
-    shootingDelay = 0
-
     player = Player.new()
-
     asteroids = {}
+    shootingDelay = 0
+    gameOver = false
+    --
 
     for i = 1, ASTEROID_COUNT do
         local asteroid = Asteroid.new(ASTEROID_SIZE)
@@ -96,8 +96,6 @@ function beginContact(a, b)
     local sortedNames = {a:getUserData().name, b:getUserData().name}
     table.sort(sortedNames)
     local key = table.concat(sortedNames)
-
-    -- Call the appropriate handler, if one exists
     local handler = collisionHandlers[key]
     if handler then
         handler(a, b)
@@ -109,17 +107,17 @@ function love.update(dt)
     windowWidth, windowHeight = love.graphics.getDimensions()
 
     local mouseX, mouseY = love.mouse.getPosition()
-
-    dirX, dirY = Utils.getDirectionToPoint(player.body:getX(), player.body:getY(), mouseX, mouseY)
+    local dirX, dirY = Utils.getDirectionToPoint(player.body:getX(), player.body:getY(), mouseX, mouseY)
 
     player.angle = math.atan2(dirY, dirX)
-
     shootingDelay = shootingDelay - dt * 10
 
     -- if right mouse button is pressed, move the player
     if love.mouse.isDown(2) then
         player.body:applyForce(dirX * 150, dirY * 150)
     end
+
+    -- if left mouse button is pressed, shoot a bullet
     if love.mouse.isDown(1) and shootingDelay <= 0 then
         local startX = player.body:getX() + dirX * 15
         local startY = player.body:getY() + dirY * 15
@@ -127,21 +125,12 @@ function love.update(dt)
         local angle = math.atan2((mouseY - startY), (mouseX - startX))
 
         local bullet = Bullet.new(startX, startY, angle)
-
         player.bullets[bullet.id] = bullet
-
         shootingDelay = SHOOTING_SPEED
     end
 
     for k, bullet in pairs(player.bullets) do
         bullet:updatePosition()
-
-        if bullet.isDamaging == false then
-            if Utils.getDistance(player.body:getX(), player.body:getY(), bullet.body:getX(), bullet.body:getY()) > 100 then
-                bullet.isDamaging = true
-            end
-        end
-
     end
 
     player:updatePosition()
@@ -167,8 +156,6 @@ function love.draw()
     for k, asteroid in pairs(asteroids) do
         asteroid:draw()
     end
-
-    local mouseX, mouseY = love.mouse.getPosition()
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
     love.graphics.print("bullets: " .. tostring(#player.bullets), 10, 20)
