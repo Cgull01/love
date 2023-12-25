@@ -75,7 +75,7 @@ function Asteroid.new(health)
     self.shape = love.physics.newPolygonShape(points)
 
     self.fixture = love.physics.newFixture(self.body, self.shape)
-    -- self.fixture:setSensor(true)
+    self.fixture:setSensor(true)
     self.fixture:setUserData({name = "Asteroid", data = self})
     self.fixture:setRestitution( 0.6 )
 
@@ -113,8 +113,9 @@ function Asteroid:splitAsteroid()
         asteroids[leftAsteroid.id] = leftAsteroid
         asteroids[rightAsteroid.id] = rightAsteroid
     end
-    self.body:destroy()
+
     asteroids[self.id] = nil
+    self.body:destroy()
 
 end
 

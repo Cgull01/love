@@ -5,14 +5,7 @@ local Utils = require("utils")
 
 windowWidth, windowHeight = love.graphics.getDimensions()
 
--- TODO
--- player lifepoints
--- gameover
--- powerups: health, machineGun while removing old bullets, split shooter
--- massive world? tracking player?
-
-local ASTEROID_COUNT = 5
-local ASTEROID_SIZE = 5
+local DEATH_TIMER = 10
 
 local SHOOTING_SPEED = 1
 
@@ -37,33 +30,50 @@ function love.load()
     -- globals
     world = love.physics.newWorld(0, 0, true)
     player = Player.new()
+    level = 0
     asteroids = {}
-    shootingDelay = 0
+    _shootingSpeed = 0
+    _deathTimer = 0
     gameOver = false
+    heartIcon = love.graphics.newImage("heart_icon.png")
     --
 
-    for i = 1, ASTEROID_COUNT do
-        local asteroid = Asteroid.new(ASTEROID_SIZE)
-        asteroids[asteroid.id] = asteroid
-    end
 
     world:setCallbacks(beginContact)
 end
 
 local function gameOverHandler()
+    player.body:destroy()
     gameOver = true
     print("Game Over")
 end
 
 function beginContact(a, b)
     local collisionHandlers = {
-        ["AsteroidPlayer"] = gameOverHandler,
+        ["AsteroidPlayer"] = function(playerFixture, asteroidFixture)
+            local player = playerFixture:getUserData().data
+            local asteroid = asteroidFixture:getUserData().data
+
+            player:receiveDamage()
+            _deathTimer = DEATH_TIMER
+            asteroid.isSplit = true
+
+            if player.health <= 0 then
+                gameOverHandler()
+            end
+        end,
         ["BulletPlayer"] = function(playerFixture, bulletFixture)
             local bullet = bulletFixture:getUserData().data
+            local player = playerFixture:getUserData().data
 
             if player.bullets[bullet.id] ~= nil then
                 if bullet.isDamaging == true then
-                    gameOverHandler()
+                    player:receiveDamage()
+                    _deathTimer = DEATH_TIMER
+
+                    if player.health <= 0 then
+                        gameOverHandler()
+                    end
                 end
 
                 bullet.body:destroy()
@@ -104,21 +114,28 @@ end
 
 function love.update(dt)
     world:update(dt)
+
+    if player.body:isDestroyed() == true then
+        return
+    end
+
+
     windowWidth, windowHeight = love.graphics.getDimensions()
 
     local mouseX, mouseY = love.mouse.getPosition()
-    local dirX, dirY = Utils.getDirectionToPoint(player.body:getX(), player.body:getY(), mouseX, mouseY)
+
+    dirX, dirY = Utils.getDirectionToPoint(player.body:getX(), player.body:getY(), mouseX, mouseY)
 
     player.angle = math.atan2(dirY, dirX)
-    shootingDelay = shootingDelay - dt * 10
+    _shootingSpeed = _shootingSpeed - dt * 10
 
     -- if right mouse button is pressed, move the player
     if love.mouse.isDown(2) then
-        player.body:applyForce(dirX * 150, dirY * 150)
+        player.body:applyLinearImpulse(dirX * 2, dirY * 2)
     end
 
     -- if left mouse button is pressed, shoot a bullet
-    if love.mouse.isDown(1) and shootingDelay <= 0 then
+    if love.mouse.isDown(1) and _shootingSpeed <= 0 then
         local startX = player.body:getX() + dirX * 15
         local startY = player.body:getY() + dirY * 15
 
@@ -126,7 +143,7 @@ function love.update(dt)
 
         local bullet = Bullet.new(startX, startY, angle)
         player.bullets[bullet.id] = bullet
-        shootingDelay = SHOOTING_SPEED
+        _shootingSpeed = SHOOTING_SPEED
     end
 
     for k, bullet in pairs(player.bullets) do
@@ -142,6 +159,26 @@ function love.update(dt)
             asteroid:updatePosition()
         end
     end
+
+    if _deathTimer > 0 then
+        _deathTimer = _deathTimer - dt * 10
+        player.body:setActive(false)
+        player.body:setX(windowWidth / 2)
+        player.body:setY(windowHeight / 2)
+        player.body:setLinearVelocity(0, 0)
+        return
+    else
+        player.body:setActive(true)
+    end
+
+
+    if #asteroids <= 0 then
+        level = level + 1
+        for i = 1, math.random(2, level + 1) do
+            local asteroid = Asteroid.new(math.random(level + 2, level + 4))
+            asteroids[asteroid.id] = asteroid
+        end
+    end
 end
 
 function love.draw()
@@ -151,10 +188,20 @@ function love.draw()
         bullet:draw()
     end
 
-    player:draw()
+    if _deathTimer <= 0 and player.health > 0 then
+        player:draw()
+    elseif player.health > 0 then
+        love.graphics.print(_deathTimer, windowWidth / 2, windowHeight / 2)
+    else
+        love.graphics.print("GAME OVER", windowWidth / 2, windowHeight / 2)
+    end
 
     for k, asteroid in pairs(asteroids) do
         asteroid:draw()
+    end
+
+    for i = 1, player.health do
+        love.graphics.circle("fill", windowWidth - 10 - i * 15, 10, 5)
     end
 
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)

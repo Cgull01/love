@@ -1,4 +1,6 @@
 local Entity = require("entity")
+local Utils = require("utils")
+
 local Bullet = setmetatable({}, {__index = Entity})
 Bullet.__index = Bullet
 

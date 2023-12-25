@@ -12,8 +12,13 @@ function Player.new()
     self.fixture:setSensor(true)
 
     self.angle = 0
+    self.health = 3
     self.bullets = {}
     return self
+end
+
+function Player:receiveDamage()
+    self.health = self.health - 1
 end
 
 function Player:draw()
